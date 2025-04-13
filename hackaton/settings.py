@@ -82,12 +82,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 
-# Добавляем директорию для статики в разработке
+# Для Render необходимо указать, где статические файлы будут собираться и откуда
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'app/static'),
+    os.path.join(BASE_DIR, 'app/static'),  # Указание на папку статики в проекте
 ]
 
-# Указываем, где будут собираться статики для продакшн-режима
+# Указание, куда статические файлы будут собираться в продакшн-режиме
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files (user-uploaded files)
@@ -97,7 +97,18 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'app/media')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Указываем кастомную модель пользователя
 AUTH_USER_MODEL = "app.User"
 
+# ALLOWED_HOSTS должен включать домены, с которых разрешен доступ
 ALLOWED_HOSTS = ['hahahaton.onrender.com', 'localhost', '127.0.0.1']
 
+# Включаем поддержку безопасности с помощью хостов
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Для использования HTTPS
+SECURE_SSL_REDIRECT = True
+
+# Для работы с сессиями через прокси
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
