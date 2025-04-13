@@ -1,6 +1,6 @@
 {% extends 'html/base.html' %}
 {% load static %}
-
+{% get_media_prefix as MEDIA_PREFIX %}
 {% block title %}Профиль{% endblock %}
 
 {% block content %}
@@ -76,15 +76,15 @@
     <h2>Профиль</h2>
 
     {% if user.avatar %}
-        <img src="{{ user.avatar.url }}" alt="Аватар">
+        <img src="{{ user.avatar.url }}" alt="Аватар" class="avatar">
     {% else %}
-        <img src="{{ MEDIA_URL }}avatars/default-avatar.png" alt="Дефолтный аватар">
+        <img src="{% static 'avatars/default-avatar.png' %}" alt="Дефолтный аватар" class="avatar">
     {% endif %}
 
 
     <p><strong>Имя пользователя:</strong> {{ user_profile.username }}</p>
     <p><strong>Email:</strong> {{ user_profile.email }}</p>
-    <p><strong>О себе:</strong> {{ user_profile.about }}</p>
+    <p><strong>О себе:</strong> {{ user_profile.bio }}</p>
 
     <button type="button" onclick="toggleEdit()">Редактировать профиль</button>
 
