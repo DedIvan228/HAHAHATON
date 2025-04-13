@@ -26,8 +26,6 @@
             <input type="hidden" name="delete_team_id" value="{{ team.id }}">
             <button type="submit" name="delete_team">Удалить</button>
         </form>
-        <button onclick="showAddMemberForm({{ team.id }})">Добавить участника</button>
-        <button onclick="toggleMembers({{ team.id }})">Участники</button>
 
         <div id="add-member-{{ team.id }}" class="hidden">
             <form method="post">
