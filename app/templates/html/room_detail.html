@@ -1,0 +1,154 @@
+{% extends 'html/base.html' %}
+
+{% block title %}Комната: {{ room.name }}{% endblock %}
+
+{% block content %}
+<h1>Комната: {{ room.name }}</h1>
+<p>{{ room.description }}</p>
+<p>Ваша роль: {{ user_role }}</p>
+
+<h2>Команды</h2>
+{% if user_role != 'user' %}
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="team_name" placeholder="Название команды" required>
+    <button type="submit" name="create_team">Создать команду</button>
+</form>
+{% endif %}
+
+{% for team in teams %}
+<div style="border:1px solid #ccc; padding:10px; margin-top:10px;">
+    <strong>{{ team.name }}</strong>
+
+    {% if user_role != 'user' %}
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="delete_team_id" value="{{ team.id }}">
+            <button type="submit" name="delete_team">Удалить</button>
+        </form>
+        <button onclick="showAddMemberForm({{ team.id }})">Добавить участника</button>
+        <button onclick="toggleMembers({{ team.id }})">Участники</button>
+
+        <div id="add-member-{{ team.id }}" class="hidden">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="team_id" value="{{ team.id }}">
+                <select name="user_id">
+                    {% for user in all_users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" name="add_to_team">Добавить</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <div id="members-{{ team.id }}" class="hidden">
+        <ul>
+            {% for member in team.members.all %}
+                <li>{{ member.username }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endfor %}
+
+<hr>
+
+<h2>Задачи</h2>
+{% if user_role != 'user' %}
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="task_title" placeholder="Заголовок задачи" required>
+    <textarea name="task_description" placeholder="Описание"></textarea>
+    <input type="datetime-local" name="deadline">
+    <select name="team_id">
+        <option value="">-- Команда --</option>
+        {% for team in teams %}
+            <option value="{{ team.id }}">{{ team.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="assigned_to">
+        <option value="">-- Ответственный --</option>
+        {% for user in all_users %}
+            <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" name="create_task">Создать задачу</button>
+</form>
+{% endif %}
+
+{% for task in tasks %}
+<div style="border:1px solid #aaa; padding:10px; margin-top:10px;">
+    <strong>{{ task.title }}</strong> — {{ task.get_status_display }}
+    <p>{{ task.description }}</p>
+    <p>Ответственный: {{ task.assigned_to }}</p>
+    <p>Сделать до: {{ task.deadline|date:"d.m.Y H:i" }}</p>
+
+    {% if user_role == 'user' %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <select name="new_status">
+                {% for key, label in task.STATUS_CHOICES %}
+                    <option value="{{ key }}" {% if task.status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" name="update_status">Изменить статус</button>
+        </form>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <input type="text" name="task_title" value="{{ task.title }}">
+            <textarea name="task_description">{{ task.description }}</textarea>
+            <input type="datetime-local" name="deadline" value="{{ task.deadline|date:'Y-m-d\\TH:i' }}">
+            <select name="new_status">
+                {% for key, label in task.STATUS_CHOICES %}
+                    <option value="{{ key }}" {% if task.status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="assigned_to">
+                {% for user in all_users %}
+                    <option value="{{ user.id }}" {% if task.assigned_to == user %}selected{% endif %}>{{ user.username }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" name="edit_task">Сохранить</button>
+            <button type="submit" name="delete_task">Удалить</button>
+        </form>
+    {% endif %}
+
+</div>
+{% endfor %}
+{% if user_role == 'admin' %}
+    <h3>Назначить модератора</h3>
+    <form method="post">
+        {% csrf_token %}
+        <select name="moderator_user_id">
+            {% for user in users %}
+                {% if user.role != 'moderator' and user.user != request.user %}
+                    <option value="{{ user.user.id }}">{{ user.user.username }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <button type="submit" name="assign_moderator">Назначить</button>
+    </form>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleMembers(teamId) {
+        const el = document.getElementById('members-' + teamId);
+        el.classList.toggle('hidden');
+    }
+
+    function showAddMemberForm(teamId) {
+        const el = document.getElementById('add-member-' + teamId);
+        el.classList.toggle('hidden');
+    }
+</script>
+<style>
+    .hidden { display: none; }
+</style>
+{% endblock %}

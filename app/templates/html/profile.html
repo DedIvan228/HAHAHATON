@@ -1,0 +1,152 @@
+{% extends 'html/base.html' %}
+{% load static %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<style>
+    .profile-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .avatar {
+        width: 120px;
+        height: 120px;
+        background-size: cover;
+        border-radius: 50%;
+        display: block;
+        margin: 0 auto 20px;
+    }
+    h2 {
+        text-align: center;
+    }
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    label {
+        font-weight: bold;
+    }
+    input, textarea {
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    button {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        width: fit-content;
+        align-self: flex-end;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    .password-section {
+        margin-top: 20px;
+        border-top: 1px solid #ccc;
+        padding-top: 20px;
+    }
+    .note {
+        font-size: 0.9em;
+        color: #666;
+    }
+    #edit-form {
+        display: none;
+    }
+    .change_img{
+        display: flex;
+        flex-direction: column;
+    }
+</style>
+
+<div class="profile-container">
+    <h2>Профиль</h2>
+
+    {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" alt="Аватар">
+    {% else %}
+        <img src="{{ MEDIA_URL }}avatars/default-avatar.png" alt="Дефолтный аватар">
+    {% endif %}
+
+
+    <p><strong>Имя пользователя:</strong> {{ user_profile.username }}</p>
+    <p><strong>Email:</strong> {{ user_profile.email }}</p>
+    <p><strong>О себе:</strong> {{ user_profile.about }}</p>
+
+    <button type="button" onclick="toggleEdit()">Редактировать профиль</button>
+
+    <form id="edit-form" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div>
+            <label for="{{ form.username.id_for_label }}">Имя пользователя</label>
+            {{ form.username }}
+        </div>
+
+        <div>
+            <label for="{{ form.email.id_for_label }}">Email</label>
+            {{ form.email }}
+        </div>
+
+        <div>
+            <label for="{{ form.about.id_for_label }}">О себе</label>
+            {{ form.bio }}
+        </div>
+
+        <div class="avatar-upload">
+            <label for="{{ form.avatar.id_for_label }}">Аватар</label>
+            {% if user_profile.avatar.name != '' %}
+                <div class="avatar-preview" style="display: grid; align-items: center; grid-template-columns: 72px 402px 15px 40px; gap: 5px;" >
+
+                    {{ form.avatar}}
+                </div>
+            {% else %}
+                <div style="margin-top: 10px; min-width: 500px;">
+                    {{ form.avatar }}
+                </div>
+            {% endif %}
+        </div>
+        <div class="password-section">
+            <h3>Сменить пароль</h3>
+            <p class="note">Если не хотите менять пароль — оставьте поля пустыми</p>
+
+            <div>
+                {{ password_form.old_password.label_tag }}
+                {{ password_form.old_password }}
+            </div>
+
+            <div>
+                {{ password_form.new_password1.label_tag }}
+                {{ password_form.new_password1 }}
+            </div>
+
+            <div>
+                {{ password_form.new_password2.label_tag }}
+                {{ password_form.new_password2 }}
+            </div>
+        </div>
+
+        <button type="submit">Сохранить изменения</button>
+    </form>
+</div>
+
+<script>
+    function toggleEdit() {
+        const form = document.getElementById('edit-form');
+        form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+    }
+</script>
+{% endblock %}
